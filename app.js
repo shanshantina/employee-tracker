@@ -5,34 +5,7 @@ const chalk = require('chalk');
 
 
 const inputCheck = require('./utils/inputCheck');
-
-
-class Database {
-    constructor (config) {
-        this.connection = mysql.createConnection(config);
-    };
-
-    query(sql, params) {
-        return new Promise((resolve, reject) => {
-            this.connection.query(sql, params, (err, rows) => {
-                if(err) {
-                    return reject(err);
-                };
-                resolve(rows)
-            });
-        });
-    };
-    close() {
-        return new Promise((resolve, reject) => {
-            this.connection.end(err => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            });
-        });
-    };
-};
+const Database = require('./utils/connection');
 
 
 // create connection to database
@@ -327,7 +300,7 @@ async function addEmployee() {
 
 // update employee
 async function updateEmployeeRole() {
-    let selectEmployee = await db.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee');
+    let selectEmployee = await db.query(`SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee`);
     selectEmployee.push( {id: null, name: 'Cancel' });
     let roleList = await db.query(`SELECT id, title FROM role`);
     
@@ -335,7 +308,7 @@ async function updateEmployeeRole() {
         {
             type: 'rawlist',
             name: 'employeeName',
-            message: "Please select the employee's last name:",
+            message: "Please select the employee's name:",
             choices: selectEmployee.map(employee => employee.name)
         },
         {
@@ -353,104 +326,143 @@ async function updateEmployeeRole() {
             db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [roleNewId, employeeId]);
             console.log("\x1b[35m", `${response.employeeName} new role ${response.newRole} has been updated.`);        
         }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }
         mainPage();
+    }); 
+};
+
+
+// update employee manager
+async function updateEmployeeManager() {
+    let employees = await db.query(`SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee`);
+    employees.push( {id: null, name: 'Cancel' });
+    
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'employeeName',
+            message: "Please select the employee's name:",
+            choices: employees.map(employee => employee.name)
+        }
+    ])
+    .then(replyEmployee => {
+        if(replyEmployee.employeeName === 'Cancel') {
+            console.log("\x1b[35m", "No changes made.");
+            mainPage();
+            return;
+        };
+
+        let managers = employees.filter(currentEmployee => currentEmployee.name != replyEmployee.employeeName);
+            for (i in managers) {
+            if (managers[i].name === 'Cancel') {
+                managers[i].name = 'None';
+            };
+        };
+
+        inquirer.prompt([
+            {
+                type: 'rawlist',
+                name: 'managerName',
+                message: "Please select the employee's new manager:",
+                choices: managers.map(employee => employee.name)
+            },
+        ])
+        .then(function(replyManager) {
+            let nameId = employees.find(employee => employee.name === replyEmployee.employeeName).id;
+            let managerNewId = managers.find(employee => employee.name === replyManager.managerName).id;
+
+            db.query(`UPDATE employee SET manager_id = ? WHERE id = ?`, [managerNewId, nameId]);
+            console.log("\x1b[35m", `${replyEmployee.employeeName}'s new manager has been updated to ${replyManager.managerName}.`);        
+   
+            mainPage();
+        });
     }); 
 };
 
 
 // delete a department
 async function deleteDepartment() {
-    db.query(`SELECT * FROM department`, function(err, res) {
-        if(err) throw err;
-        inquirer.prompt([
-            {
-                type: 'rawlist',
-                name: 'deleteDepart',
-                message: 'Please select the department name which you want to delete:',
-                choices: function() {
-                    let departArray = [];
-                    for (let i = 0; i < res.length; i++) {
-                        departArray.push(res[i].name);
-                    }
-                    return departArray;
-                }
-            }
-        ])
-        .then(function(response) {
-            const sql = `DELETE FROM department WHERE id =?`;
-            const params = [response.choices];
-        
-            db.query(sql, params, function(err, result) {
-                if(err) throw err;
-                console.table("Department had been deleted", response);
-                mainPage();
-            })
-        })
-    })
+    let departmentList = await db.query(`SELECT id, name FROM department`);
+    departmentList.push({ id: null, name: 'Cancel' });
+
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'deleteDepart',
+            message: 'Please select the department which you want to delete:',
+            choices: departmentList.map(department => department.name)
+        }
+    ])
+    .then(function(response) {
+        if (response.deleteDepart != 'Cancel') {
+            let deletedDepartId = departmentList.find(department => department.name === response.deleteDepart).id;
+            db.query(`DELETE FROM department WHERE id =?`,[deletedDepartId]);
+    
+            console.log("\x1b[35m", `${response.deleteDepart} has been deleted from department table.`);
+        }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }
+        mainPage();  
+    });   
 }; 
 
 
 //delete a role
 async function deleteRole() {
-    db.query(`SELECT * FROM role`, function(err, res) {
-        if(err) throw err;
-        inquirer.prompt([
-            {
-                input: 'rawlist',
-                name: 'deleteRole',
-                message: 'Please select the role title which you want to delete:',
-                choices: function() {
-                    let roleArray = [];
-                    for (let i = 0; i < res.length; i++) {
-                        roleArray.push(res[i].title);
-                    }
-                    return roleArray;
-                }
-            }
-        ])
-        .then(function(response) {
-            const sql = `DELETE FROM role WHERE id =?`;
-            const params = [response.choices];
-        
-            db.query(sql, params, function(err, result) {
-                if(err) throw err;
-                console.table("Role had been deleted", response);
-                mainPage();
-            });
-        });
+    let roles = await db.query(`SELECT id, title FROM role`);
+    roles.push({ id: null, title: 'Cancel' });
+
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'deleteRole',
+            message: 'Please select the role title which you want to delete:',
+            choices: roles.map(role => role.title)
+        }
+    ])
+    .then(function(response) {
+        if (response.deleteRole != 'Cancel') {
+            let deletedRoleId = roles.find(role => role.title === response.deleteRole).id;
+
+            db.query(`DELETE FROM role WHERE id =?`, [deletedRoleId]);
+            console.log("\x1b[35m", `${response.deleteRole} has been deleted from role table.`);
+        }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }
+        mainPage();
     });
 };
 
 
 // delete an employee
-async function deleteRole() {
-    db.query(`SELECT id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`, function(err, res) {
-        if(err) throw err;
-        inquirer.prompt([
-            {
-                input: 'rawlist',
-                name: 'deleteEmployee',
-                message: 'Please select the employee which you want to delete:',
-                choices: function() {
-                    let employeeArray = [];
-                    for (let i = 0; i < res.length; i++) {
-                        employeeArray.push(res[i].name);
-                    }
-                    return employeeArray;
-                }
-            }
-        ])
-        .then(function(response) {
-            const sql = `DELETE FROM employee WHERE id =?`;
-            const params = [response.choices];
-        
-            db.query(sql, params, function(err, result) {
-                if(err) throw err;
-                console.table("Employee had been deleted", response);
-                mainPage();
-            });
-        });
-    });
+async function deleteEmployee() {
+    let employees = await db.query(`SELECT id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`);
+    employees.push( {id: null, name: 'Cancel' });
+
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'deleteEmployee',
+            message: 'Please select the employee which you want to delete:',
+            choices: employees.map(employee => employee.name)
+        }
+    ])
+    .then(function(response) {
+        if (response.deleteEmployee != 'Cancel') {
+            let deleteEmployeeId = employees.find(employee => employee.name === response.deleteEmployee).id;
+
+            db.query(`DELETE FROM employee WHERE id =?`, [deleteEmployeeId]);
+            console.log("\x1b[35m", `${response.deleteEmployee} has been deleted from employee table.`);
+        }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }       
+        mainPage();
+    }); 
 };
 
 
