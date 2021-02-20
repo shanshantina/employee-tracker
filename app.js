@@ -55,49 +55,139 @@ function mainPage() {
             name: 'mainPage',
             message: 'What would you like to do?',
             choices: [
-                'View All Departments',
-                'View All Roles',
-                'View All Employees',
-                'View Departments Budget',
-                'View Employees by Manager',
-                'View Employees by Department',
-                'Add A Department',
-                'Add A Role',
-                'Add An Employee',
-                'Update An Employee Role',
-                'Update Employee Manager',
-                'Delete A Deparment',
-                'Delete A Role',
-                'Delete An Employee',
+                'View And Edit Department Information',
+                'View And Edit Role Information',
+                'View And Edit Employee Information',
                 'Exit'   
             ]
         }
     ])
     .then(function(response) {
         switch (response.mainPage) {
+            case 'View And Edit Department Information':
+                console.log("\x1b[35m", `You are on Department Page.`);
+                departmentPage();
+                break;
+            case 'View And Edit Role Information':
+                console.log("\x1b[35m", `You are on Role Page.`);
+                rolePage();
+                break;
+            case 'View And Edit Employee Information':
+                console.log("\x1b[35m", `You are on Employee Page.`);
+                employeePage();
+                break;
+            case 'Exit':
+                endApp();
+                break;     
+        };
+    });
+};
+
+
+// create department page
+function departmentPage() {
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'departmentPage',
+            message: 'What would you like to do on Department Page?',
+            choices: [
+                'View All Departments',
+                'View Departments Budget',
+                'Add A Department',
+                'Delete A Deparment',
+                'Go Back To Main Page'   
+            ]
+        }
+    ])
+    .then(function(response) {
+        switch (response.departmentPage) {
             case 'View All Departments':
                 allDepartments();
                 break;
+            case 'View Departments Budget':
+                viewDeparmentBudget();
+                break;
+            case 'Add A Department':
+                addDepartment();
+                break;
+            case 'Delete A Deparment':
+                deleteDepartment();
+                break;
+            case 'Go Back To Main Page':
+                console.log("\x1b[35m", `You are back to Main Page.`);
+                mainPage();
+                break;     
+        };
+    });
+};
+
+
+
+//create role page
+function rolePage() {
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'rolePage',
+            message: 'What would you like to do on Role Page?',
+            choices: [
+                'View All Roles',
+                'Add A Role',
+                'Delete A Role',
+                'Go Back To Main Page'  
+            ]
+        }
+    ])
+    .then(function(response) {
+        switch (response.rolePage) {
             case 'View All Roles':
                 allRoles();
                 break;
+            case 'Add A Role':
+                addRole();
+                break;
+            case 'Delete A Role':
+                deleteRole();
+                break;
+            case 'Go Back To Main Page':
+                console.log("\x1b[35m", `You are back to Main Page.`);
+                mainPage();
+                break;     
+        };
+    });
+};
+
+
+
+function employeePage() {
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'employeePage',
+            message: 'What would you like to do?',
+            choices: [
+                'View All Employees',
+                'View Employees by Manager',
+                'View Employees by Department',
+                'Add An Employee',
+                'Update An Employee Role',
+                'Update Employee Manager',
+                'Delete An Employee',
+                'Go Back To Main Page'    
+            ]
+        }
+    ])
+    .then(function(response) {
+        switch (response.employeePage) {
             case 'View All Employees':
                 allEmployees();
-                break;
-            case 'View Departments Budget':
-                viewBudget();
                 break;
             case 'View Employees by Manager':
                 viewEmployeeByManager();
                 break;
             case 'View Employees by Department':
                 viewEmployeeByDepart();
-                break;
-            case 'Add A Department':
-                addDepartment();
-                break;
-            case 'Add A Role':
-                addRole();
                 break;
             case 'Add An Employee':
                 addEmployee();
@@ -108,21 +198,18 @@ function mainPage() {
             case 'Update Employee Manager':
                 updateEmployeeManager();
                 break;
-            case 'Delete A Deparment':
-                deleteDepartment();
-                break;
-            case 'Delete A Role':
-                deleteRole();
-                break;
             case 'Delete An Employee':
                 deleteEmployee();
                 break;
-            case 'Exit':
-                endApp();
-                break;     
+            case 'Go Back To Main Page':
+                console.log("\x1b[35m", `You are back to Main Page.`);
+                mainPage();
+                break;       
         };
     });
 };
+
+
 
 
 // show all departments table
@@ -130,59 +217,13 @@ async function allDepartments() {
     await db.query(`SELECT id, name AS Department FROM department`, (err, rows) => {
         if(err) throw err;
         console.table(rows);
-        mainPage();
+        departmentPage();
     });
-};
-
-
-// show all the roles table
-async function allRoles() {     
-    await db.query(`SELECT role.id AS ID, role.title AS Job_Title, department.name AS Department, role.salary AS Salary
-                    FROM department 
-                    JOIN role ON department.id = role.department_id`, 
-        (err, rows) => {
-        if(err) throw err;
-        console.table(rows);
-        mainPage();
-    });
-};
-
-
-// show all employees talbe
-async function allEmployees() {
-    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
-                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
-                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
-                    FROM employee INNER JOIN role ON role.id = employee.role_id 
-                    INNER JOIN department ON department.id = role.department_id
-                    LEFT JOIN employee e ON employee.manager_id = e.id`,
-        (err, rows) => {
-        if(err) throw err;
-        console.table(rows);
-        mainPage();
-    });
-};
-
-
-// view employee by manager first name
-async function viewEmployeeByManager() {
-    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
-                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
-                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
-                    FROM employee INNER JOIN role ON role.id = employee.role_id 
-                    INNER JOIN department ON department.id = role.department_id
-                    LEFT JOIN employee e ON employee.manager_id = e.id
-                    ORDER BY Manager ASC`,
-        (err, rows) => {
-        if(err) throw err;
-        console.table(rows);
-        mainPage();
-    });    
 };
 
 
 // view the department budget
-async function viewBudget() {
+async function viewDeparmentBudget() {
     let salary = await db.query(`SELECT department.name AS Department, role.salary FROM employee e 
                                  LEFT JOIN employee m ON e.manager_id = m.id 
                                  INNER JOIN role ON e.role_id = role.id INNER JOIN department ON role.department_id = department.id 
@@ -210,24 +251,7 @@ async function viewBudget() {
     };
     
     console.table(budgetArr);
-    mainPage()
-};
-
-
-// view employee by department
-async function viewEmployeeByDepart() {
-    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
-                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
-                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
-                    FROM employee INNER JOIN role ON role.id = employee.role_id 
-                    INNER JOIN department ON department.id = role.department_id
-                    LEFT JOIN employee e ON employee.manager_id = e.id
-                    ORDER BY Department ASC`,
-        (err, rows) => {
-        if(err) throw err;
-        console.table(rows);
-        mainPage();
-    }); 
+    departmentPage();
 };
 
 
@@ -244,7 +268,48 @@ async function addDepartment() {
     .then(response => {;
         db.query(`INSERT INTO department (name) VALUES (?)`, [response.addDepartment]);
         console.log("\x1b[35m", `${response.addDepartment} has been added to department table.`);
-        mainPage();
+        departmentPage();
+    });
+};
+
+
+// delete a department
+async function deleteDepartment() {
+    let departmentList = await db.query(`SELECT id, name FROM department`);
+    departmentList.push({ id: null, name: 'Cancel' });
+
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'deleteDepart',
+            message: 'Please select the department which you want to delete:',
+            choices: departmentList.map(department => department.name)
+        }
+    ])
+    .then(function(response) {
+        if (response.deleteDepart != 'Cancel') {
+            let deletedDepartId = departmentList.find(department => department.name === response.deleteDepart).id;
+            db.query(`DELETE FROM department WHERE id =?`,[deletedDepartId]);
+    
+            console.log("\x1b[35m", `${response.deleteDepart} has been deleted from department table.`);
+        }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }
+        departmentPage();  
+    });   
+};
+
+
+// show all the roles table
+async function allRoles() {     
+    await db.query(`SELECT role.id AS ID, role.title AS Job_Title, department.name AS Department, role.salary AS Salary
+                    FROM department 
+                    JOIN role ON department.id = role.department_id`, 
+        (err, rows) => {
+        if(err) throw err;
+        console.table(rows);
+        rolePage();
     });
 };
 
@@ -284,9 +349,91 @@ async function addRole() {
         db.query(`INSERT INTO role (title, salary, department_id) VALUES (?,?,?)`,
                  [response.roleName, response.salary, deptId]);
         console.log("\x1b[35m", `${response.roleName} has been added to Department: ${response.roleDepartment}.`);
-        mainPage();
+        rolePage();
     });
 };
+
+
+
+//delete a role
+async function deleteRole() {
+    let roles = await db.query(`SELECT id, title FROM role`);
+    roles.push({ id: null, title: 'Cancel' });
+
+    inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'deleteRole',
+            message: 'Please select the role title which you want to delete:',
+            choices: roles.map(role => role.title)
+        }
+    ])
+    .then(function(response) {
+        if (response.deleteRole != 'Cancel') {
+            let deletedRoleId = roles.find(role => role.title === response.deleteRole).id;
+
+            db.query(`DELETE FROM role WHERE id =?`, [deletedRoleId]);
+            console.log("\x1b[35m", `${response.deleteRole} has been deleted from role table.`);
+        }
+        else {
+            console.log("\x1b[35m", "No changes made.");
+        }
+        rolePage();
+    });
+};
+
+
+// show all employees talbe
+async function allEmployees() {
+    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
+                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
+                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
+                    FROM employee INNER JOIN role ON role.id = employee.role_id 
+                    INNER JOIN department ON department.id = role.department_id
+                    LEFT JOIN employee e ON employee.manager_id = e.id`,
+        (err, rows) => {
+        if(err) throw err;
+        console.table(rows);
+        employeePage();
+    });
+};
+
+
+// view employee by manager first name
+async function viewEmployeeByManager() {
+    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
+                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
+                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
+                    FROM employee INNER JOIN role ON role.id = employee.role_id 
+                    INNER JOIN department ON department.id = role.department_id
+                    LEFT JOIN employee e ON employee.manager_id = e.id
+                    ORDER BY Manager ASC`,
+        (err, rows) => {
+        if(err) throw err;
+        console.table(rows);
+        employeePage();
+    });    
+};
+
+
+
+// view employee by department
+async function viewEmployeeByDepart() {
+    await db.query(`SELECT employee.id AS ID, employee.first_name AS First_Name, employee.last_name AS Last_Name, 
+                    role.title AS Job_Title, department.name AS Department, role.salary AS Salary, 
+                    CONCAT(e.first_name, " ", e.last_name) AS Manager 
+                    FROM employee INNER JOIN role ON role.id = employee.role_id 
+                    INNER JOIN department ON department.id = role.department_id
+                    LEFT JOIN employee e ON employee.manager_id = e.id
+                    ORDER BY Department ASC`,
+        (err, rows) => {
+        if(err) throw err;
+        console.table(rows);
+        employeePage();
+    }); 
+};
+
+
 
 
 // add an employee
@@ -329,7 +476,7 @@ async function addEmployee() {
                   [response.firstName, response.lastName, roleId, managerId]);
         
         console.log("\x1b[35m", `${response.firstName} ${response.lastName} has been added to employee table.`);
-        mainPage();
+        employeePage();
     });    
 };
 
@@ -365,7 +512,7 @@ async function updateEmployeeRole() {
         else {
             console.log("\x1b[35m", "No changes made.");
         }
-        mainPage();
+        employeePage();
     }); 
 };
 
@@ -411,67 +558,11 @@ async function updateEmployeeManager() {
 
             db.query(`UPDATE employee SET manager_id = ? WHERE id = ?`, [managerNewId, nameId]);
             console.log("\x1b[35m", `${replyEmployee.employeeName}'s new manager has been updated to ${replyManager.managerName}.`);        
-   
-            mainPage();
         });
+        employeePage();
     }); 
 };
 
-
-// delete a department
-async function deleteDepartment() {
-    let departmentList = await db.query(`SELECT id, name FROM department`);
-    departmentList.push({ id: null, name: 'Cancel' });
-
-    inquirer.prompt([
-        {
-            type: 'rawlist',
-            name: 'deleteDepart',
-            message: 'Please select the department which you want to delete:',
-            choices: departmentList.map(department => department.name)
-        }
-    ])
-    .then(function(response) {
-        if (response.deleteDepart != 'Cancel') {
-            let deletedDepartId = departmentList.find(department => department.name === response.deleteDepart).id;
-            db.query(`DELETE FROM department WHERE id =?`,[deletedDepartId]);
-    
-            console.log("\x1b[35m", `${response.deleteDepart} has been deleted from department table.`);
-        }
-        else {
-            console.log("\x1b[35m", "No changes made.");
-        }
-        mainPage();  
-    });   
-}; 
-
-
-//delete a role
-async function deleteRole() {
-    let roles = await db.query(`SELECT id, title FROM role`);
-    roles.push({ id: null, title: 'Cancel' });
-
-    inquirer.prompt([
-        {
-            type: 'rawlist',
-            name: 'deleteRole',
-            message: 'Please select the role title which you want to delete:',
-            choices: roles.map(role => role.title)
-        }
-    ])
-    .then(function(response) {
-        if (response.deleteRole != 'Cancel') {
-            let deletedRoleId = roles.find(role => role.title === response.deleteRole).id;
-
-            db.query(`DELETE FROM role WHERE id =?`, [deletedRoleId]);
-            console.log("\x1b[35m", `${response.deleteRole} has been deleted from role table.`);
-        }
-        else {
-            console.log("\x1b[35m", "No changes made.");
-        }
-        mainPage();
-    });
-};
 
 
 // delete an employee
@@ -497,7 +588,7 @@ async function deleteEmployee() {
         else {
             console.log("\x1b[35m", "No changes made.");
         }       
-        mainPage();
+        employeePage();
     }); 
 };
 
