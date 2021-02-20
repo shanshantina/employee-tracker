@@ -17,7 +17,6 @@ const db = new Database ({
 });
 
 
-
 console.log (chalk.magentaBright(`
     --------------------------------------------------------------------------------                                                
       ________                          __                                              
@@ -57,9 +56,9 @@ function mainPage() {
             message: 'What would you like to do?',
             choices: [
                 'View All Departments',
-                "View Departments' Budget",
                 'View All Roles',
                 'View All Employees',
+                'View Departments Budget',
                 'View Employees by Manager',
                 'View Employees by Department',
                 'Add A Department',
@@ -79,14 +78,14 @@ function mainPage() {
             case 'View All Departments':
                 allDepartments();
                 break;
-            case "View Departments' Budge":
-                viewBudget();
-                break;
             case 'View All Roles':
                 allRoles();
                 break;
             case 'View All Employees':
                 allEmployees();
+                break;
+            case 'View Departments Budget':
+                viewBudget();
                 break;
             case 'View Employees by Manager':
                 viewEmployeeByManager();
