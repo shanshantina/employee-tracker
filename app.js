@@ -57,6 +57,7 @@ function mainPage() {
             message: 'What would you like to do?',
             choices: [
                 'View All Departments',
+                "View Departments' Budget",
                 'View All Roles',
                 'View All Employees',
                 'View Employees by Manager',
@@ -69,7 +70,7 @@ function mainPage() {
                 'Delete A Deparment',
                 'Delete A Role',
                 'Delete An Employee',
-                'Exit'
+                'Exit'   
             ]
         }
     ])
@@ -77,6 +78,9 @@ function mainPage() {
         switch (response.mainPage) {
             case 'View All Departments':
                 allDepartments();
+                break;
+            case "View Departments' Budge":
+                viewBudget();
                 break;
             case 'View All Roles':
                 allRoles();
@@ -116,7 +120,7 @@ function mainPage() {
                 break;
             case 'Exit':
                 endApp();
-                break;
+                break;     
         };
     });
 };
@@ -175,6 +179,39 @@ async function viewEmployeeByManager() {
         console.table(rows);
         mainPage();
     });    
+};
+
+
+// view the department budget
+async function viewBudget() {
+    let salary = await db.query(`SELECT department.name AS Department, role.salary FROM employee e 
+                                 LEFT JOIN employee m ON e.manager_id = m.id 
+                                 INNER JOIN role ON e.role_id = role.id INNER JOIN department ON role.department_id = department.id 
+                                 ORDER BY department ASC`);
+    let departments = await db.query(`SELECT name FROM department ORDER BY name ASC`);
+
+    let budgetArr = [];
+    let department;
+
+    for (i=0; i < departments.length; i++) {
+        let departmentBudget = 0;
+
+        for (j=0; j < salary.length; j++) {
+            if (departments[i].name === salary[j].Department) {
+                departmentBudget += salary[j].salary;
+            };
+        };
+
+        department = {
+            Department: departments[i].name,
+            Budget: departmentBudget
+        }
+
+        budgetArr.push(department);
+    };
+    
+    console.table(budgetArr);
+    mainPage()
 };
 
 
@@ -468,5 +505,5 @@ async function deleteEmployee() {
 
 // exit the app
 function endApp() {
-    db.end();
+    db.close();   
 };
