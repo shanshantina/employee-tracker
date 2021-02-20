@@ -18,7 +18,7 @@ const db = new Database ({
 
 
 console.log (chalk.magentaBright(`
-    --------------------------------------------------------------------------------                                                
+  ------------------------------------------------------------------------------------                                              
       ________                          __                                              
      /        |                        /  |                                             
      $$$$$$$$/  _____  ____    ______  $$ |  ______   __    __   ______    ______       
@@ -43,7 +43,7 @@ console.log (chalk.magentaBright(`
                                                 /  \__$$ |                              
                                                 $$    $$/                               
                                                  $$$$$$/                                                                    
-    --------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------------
 `));
 
 mainPage();
@@ -165,7 +165,7 @@ function employeePage() {
         {
             type: 'rawlist',
             name: 'employeePage',
-            message: 'What would you like to do?',
+            message: 'What would you like to do on Employee?',
             choices: [
                 'View All Employees',
                 'View Employees by Manager',
