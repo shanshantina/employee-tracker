@@ -5,16 +5,7 @@ const chalk = require('chalk');
 
 
 const inputCheck = require('./utils/inputCheck');
-const Database = require('./utils/connection');
-
-
-// create connection to database
-const db = new Database ({
-    host: 'localhost',
-    user: 'root',
-    password: 'rA2!t0yd[W!qf@>',
-    database: 'employees_db'
-});
+const db = require('./utils/connection');
 
 
 console.log (chalk.magentaBright(`

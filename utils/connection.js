@@ -27,4 +27,13 @@ class Database {
     };
 };
 
-module.exports = Database;
+
+// create connection to database
+const db = new Database ({
+    host: 'localhost',
+    user: 'root',
+    password: 'rA2!t0yd[W!qf@>',
+    database: 'employees_db'
+});
+
+module.exports = db;
