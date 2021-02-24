@@ -28,6 +28,11 @@
 The application itself runs by command `node app.js` or `node app`.
 
   ## Usage
+  
+   [Employee Tracker Walkthrough Video](https://drive.google.com/file/d/1J5iWysEwICot7b8-4jJhsPIKkp3uhwl5/view)
+
+   ![demo](./assets/video/employee-tracker.mp4)
+
   Employee Tracker is a command-line application that accepts user input: 
   1. when user starts the application, then user is presented with the following options: 
       * View And Edit Department Information
@@ -71,9 +76,6 @@ The application itself runs by command `node app.js` or `node app`.
   19. when user selects **Delete An Employee**, then user is prompted to select the employee's name from employee name list and that employee is deleted from the database.
   20. when user selects **Exit**, the application is ended.
   
-  [Employee Tracker Walkthrough Video]() 
-  
-  ![demo](./assets/image/employee-tracker.gif)
 
   ## License
   

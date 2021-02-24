@@ -321,10 +321,10 @@ async function addRole() {
             name: 'salary',
             message: "Please enter the role's salary (Enter a number):",
             validate: input => {
-                if (!isNaN(input)) {
+                if (!isNaN(input) && input.trim() !== "") {
                     return true;
                 }
-                return 'Please enter a valid number.'
+                return '\x1b[35m(Please enter a valid number.)'
             }
         },
         {
@@ -524,7 +524,7 @@ async function updateEmployeeManager() {
     .then(replyEmployee => {
         if(replyEmployee.employeeName === 'Cancel') {
             console.log("\x1b[35m", "No changes made.");
-            mainPage();
+            employeePage();
             return;
         };
 
@@ -548,9 +548,9 @@ async function updateEmployeeManager() {
             let managerNewId = managers.find(employee => employee.name === replyManager.managerName).id;
 
             db.query(`UPDATE employee SET manager_id = ? WHERE id = ?`, [managerNewId, nameId]);
-            console.log("\x1b[35m", `${replyEmployee.employeeName}'s new manager has been updated to ${replyManager.managerName}.`);        
+            console.log("\x1b[35m", `${replyEmployee.employeeName}'s new manager has been updated to ${replyManager.managerName}.`); 
+            employeePage();       
         });
-        employeePage();
     }); 
 };
 
