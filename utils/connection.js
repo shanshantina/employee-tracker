@@ -31,6 +31,7 @@ class Database {
 // create connection to database
 const db = new Database ({
     host: 'localhost',
+    port: 3306,
     user: 'root',
     password: 'rA2!t0yd[W!qf@>',
     database: 'employees_db'
