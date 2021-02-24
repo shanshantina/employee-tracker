@@ -4,7 +4,9 @@
   
 
   ## Description
-  This is a employee tracker which is a command-line application to manage a company's employee database by using Node.js, Inquirer, and MySQL.
+  This is a employee tracker which is a command-line application to manage a company's employee database by using Node.js, Inquirer, and MySQL. 
+
+  Please access the walkthrough video from here: [Employee Tracker Walkthrough Video](https://drive.google.com/file/d/1J5iWysEwICot7b8-4jJhsPIKkp3uhwl5/view)
 
   ## Table of Contents
   * [Installation](#installation)
