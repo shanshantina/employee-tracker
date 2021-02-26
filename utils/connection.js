@@ -1,4 +1,5 @@
 const mysql = require('mysql2');
+require('dotenv').config();
 
 class Database {
     constructor (config) {
@@ -32,9 +33,9 @@ class Database {
 const db = new Database ({
     host: 'localhost',
     port: 3306,
-    user: 'root',
-    password: 'rA2!t0yd[W!qf@>',
-    database: 'employees_db'
+    user: process.env.DB_USER,
+    password: process.env.DB_PW,
+    database: process.env.DB_NAME
 });
 
 module.exports = db;
